@@ -1,0 +1,46 @@
+body {
+  font-family: sans-serif;
+  background: #1e1e1e;
+  color: white;
+  margin: 0;
+  padding: 20px;
+}
+h1,
+h2 {
+  text-align: center;
+}
+button {
+  padding: 5px 10px;
+  margin: 5px;
+}
+input {
+  width: 50px;
+  margin-right: 5px;
+}
+.container {
+  max-width: 500px;
+  margin: 0 auto;
+}
+.preset,
+.exercise,
+.history-item {
+  background: #333;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+.sets {
+  margin-top: 5px;
+}
+.nav {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.nav button {
+  margin: 0 5px;
+}
+.teksti {
+  padding: 3px;
+  border-radius: 5px;
+}
