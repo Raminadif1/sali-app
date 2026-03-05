@@ -123,7 +123,7 @@ function startWorkout(preset) {
     const setsDiv = div.querySelector(`#sets-${i}`);
     for (let s = 0; s < ex.sets; s++) {
       const setDiv = document.createElement("div");
-      setDiv.innerHTML = `Setti ${s + 1}: Paino <input type="number" value="0" class="weight">kg <br> Toistot <input type="number" value="0" class="reps">`;
+      setDiv.innerHTML = `Setti ${s + 1}:<br> Paino <input type="number" value="0" class="weight">kg <br> Toistot <input type="number" value="0" class="reps">`;
       setsDiv.appendChild(setDiv);
     }
   });
@@ -185,5 +185,6 @@ function renderHistory() {
 
 // INIT
 renderPresets();
+
 
 
