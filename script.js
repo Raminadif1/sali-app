@@ -29,14 +29,14 @@ function renderPresets() {
   const addDiv = document.createElement("div");
   addDiv.className = "preset";
   addDiv.innerHTML = `
-    <h2>Uusi Preset</h2>
+    <h2>Uusi Treeniohjelma</h2>
     Nimi: <input type="text"class="teksti" id="new-preset-name" ><br>
     Liike: <input type="text"class="teksti" id="new-preset-exercise">
     Setit: <input type="number"class="teksti" id="new-preset-sets" value="3" min="1">
     <button id="add-exercise-btn">+ Lisää liike</button><p>Liikkeet:</p>
     <ul id="exercise-list"></ul>
     
-    <button id="save-preset-btn">Tallenna Preset</button>
+    <button id="save-preset-btn">Tallenna Treeniohjelma</button>
   `;
   presetsView.appendChild(addDiv);
 
@@ -190,3 +190,4 @@ function renderHistory() {
 
 // INIT
 renderPresets();
+
