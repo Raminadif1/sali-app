@@ -85,7 +85,7 @@ function renderPresets() {
 
     // Poista preset
     div.querySelector(".delete-btn").addEventListener("click", () => {
-      if (confirm("Haluatko varmasti poistaa tämän presetin?")) {
+      if (confirm("Haluatko varmasti poistaa tämän treeniohjelman?")) {
         presets.splice(i, 1);
         localStorage.setItem("presets", JSON.stringify(presets));
         renderPresets();
@@ -185,3 +185,4 @@ function renderHistory() {
 
 // INIT
 renderPresets();
+
