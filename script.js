@@ -7,7 +7,6 @@ const presetsView = document.getElementById("presets-view");
 const workoutView = document.getElementById("workout-view");
 const historyView = document.getElementById("history-view");
 
-// NAV BUTTONS
 document.getElementById("view-presets-btn").addEventListener("click", () => {
   presetsView.style.display = "block";
   workoutView.style.display = "none";
@@ -185,6 +184,3 @@ function renderHistory() {
 
 // INIT
 renderPresets();
-
-
-
