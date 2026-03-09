@@ -2,11 +2,11 @@
 let presets = JSON.parse(localStorage.getItem("presets")) || [];
 let history = JSON.parse(localStorage.getItem("history")) || [];
 
-// === VIEWS ===
 const presetsView = document.getElementById("presets-view");
 const workoutView = document.getElementById("workout-view");
 const historyView = document.getElementById("history-view");
 
+// === NAVIGATION ===
 document.getElementById("view-presets-btn").addEventListener("click", () => {
   presetsView.style.display = "block";
   workoutView.style.display = "none";
@@ -24,185 +24,256 @@ document.getElementById("view-history-btn").addEventListener("click", () => {
 // === RENDER PRESETS ===
 function renderPresets() {
   presetsView.innerHTML = "";
+
+  // === JATKA TRENIÄ NAPPI ===
+  const savedWorkout = JSON.parse(localStorage.getItem("currentWorkout"));
+
+  if (savedWorkout) {
+    const btn = document.createElement("button");
+    btn.textContent = "▶ Jatka treeniä";
+    btn.className = "continue-btn";
+
+    btn.onclick = () => startWorkout(savedWorkout, true);
+
+    presetsView.appendChild(btn);
+  }
+
   let tempExercises = [];
 
   const addDiv = document.createElement("div");
+
   addDiv.className = "preset";
+
   addDiv.innerHTML = `
-    <h2>Uusi Treeniohjelma</h2>
-    Nimi: <input type="text" class="teksti" id="new-preset-name"><br><br><br>
-    <h3>Valitse liikkeet</h3><br>
-    Liike: <input type="text" class="teksti" id="new-preset-exercise"><br>
-    Setit: <input type="number" class="teksti" id="new-preset-sets" value="3" min="1">
-    <button id="add-exercise-btn">+ Lisää liike</button>
-    <p>Liikkeet:</p>
-    <ul id="exercise-list"></ul>
-    <button id="save-preset-btn">Tallenna Treeniohjelma</button>
+  <h2>Uusi Treeniohjelma</h2>
+
+  Nimi:
+  <input id="new-preset-name" class="teksti">
+
+  <h3>Lisää liike</h3>
+
+  Liike
+  <input id="new-preset-exercise" class="teksti">
+
+  Setit
+  <input type="number" id="new-preset-sets" value="3" min="1">
+
+  <button id="add-exercise-btn">+ Lisää liike</button>
+
+  <ul id="exercise-list"></ul>
+
+  <button id="save-preset-btn">Tallenna</button>
   `;
+
   presetsView.appendChild(addDiv);
 
-  const liikkeet = document.getElementById("exercise-list");
+  const list = document.getElementById("exercise-list");
 
-  document.getElementById("add-exercise-btn").addEventListener("click", () => {
-    const exName = document.getElementById("new-preset-exercise").value.trim();
-    const exSets = parseInt(document.getElementById("new-preset-sets").value);
+  document.getElementById("add-exercise-btn").onclick = () => {
+    const name = document.getElementById("new-preset-exercise").value.trim();
+    const sets = parseInt(document.getElementById("new-preset-sets").value);
 
-    if (!exName || isNaN(exSets) || exSets < 1)
-      return alert("Täytä kentät oikein!");
+    if (!name || sets < 1) return;
 
-    tempExercises.push({ name: exName, sets: exSets });
+    tempExercises.push({ name, sets });
 
     const li = document.createElement("li");
-    li.textContent = `${exName} (${exSets} settiä)`;
-    liikkeet.appendChild(li);
+    li.textContent = `${name} (${sets} settiä)`;
+
+    list.appendChild(li);
 
     document.getElementById("new-preset-exercise").value = "";
-  });
+  };
 
-  document.getElementById("save-preset-btn").addEventListener("click", () => {
+  document.getElementById("save-preset-btn").onclick = () => {
     const name = document.getElementById("new-preset-name").value.trim();
 
-    if (!name || tempExercises.length === 0)
-      return alert("Anna nimi ja lisää vähintään yksi liike!");
+    if (!name || tempExercises.length === 0) return;
 
-    presets.push({ name, exercises: tempExercises });
+    presets.push({
+      name,
+      exercises: tempExercises,
+    });
+
     localStorage.setItem("presets", JSON.stringify(presets));
 
-    tempExercises = [];
     renderPresets();
-  });
+  };
 
-  // Näytä presetit
+  // === LISTAA PRESETIT ===
+
   presets.forEach((p, i) => {
     const div = document.createElement("div");
     div.className = "preset";
 
     div.innerHTML = `
-      <strong>${p.name}</strong>
-      <button data-index="${i}" class="start-btn">Aloita</button>
-      <button data-index="${i}" class="delete-btn">🗑 Poista</button>
+    <strong>${p.name}</strong>
+    <button class="start-btn">Aloita</button>
+    <button class="delete-btn">🗑</button>
     `;
 
     presetsView.appendChild(div);
 
-    div
-      .querySelector(".start-btn")
-      .addEventListener("click", () => startWorkout(presets[i]));
+    div.querySelector(".start-btn").onclick = () => startWorkout(p);
 
-    div.querySelector(".delete-btn").addEventListener("click", () => {
-      if (confirm("Haluatko varmasti poistaa tämän treeniohjelman?")) {
-        presets.splice(i, 1);
-        localStorage.setItem("presets", JSON.stringify(presets));
-        renderPresets();
-      }
-    });
+    div.querySelector(".delete-btn").onclick = () => {
+      if (!confirm("Poistetaanko treeniohjelma?")) return;
+
+      presets.splice(i, 1);
+
+      localStorage.setItem("presets", JSON.stringify(presets));
+
+      renderPresets();
+    };
   });
 }
 
 // === START WORKOUT ===
-function startWorkout(preset) {
+function startWorkout(preset, resume = false) {
   presetsView.style.display = "none";
   workoutView.style.display = "block";
+
   workoutView.innerHTML = `<h2>${preset.name}</h2>`;
 
-  // === VIIME TRENI ===
-  const lastWorkout = [...history]
-    .reverse()
-    .find((h) => h.preset === preset.name);
+  let saved = JSON.parse(localStorage.getItem("currentWorkout"));
 
-  if (lastWorkout) {
-    const historyDiv = document.createElement("div");
-    historyDiv.id = "lastworkout";
-    historyDiv.className = "last-workout";
-    historyDiv.innerHTML = `<h3>Viime treeni (${lastWorkout.date})</h3>`;
+  // jos ei jatketa treeniä
+  if (!saved || !resume) {
+    saved = {
+      name: preset.name,
+      exercises: preset.exercises.map((ex) => ({
+        name: ex.name,
+        sets: Array(ex.sets)
+          .fill()
+          .map(() => ({
+            weight: 0,
+            reps: 0,
+          })),
+      })),
+    };
 
-    lastWorkout.exercises.forEach((ex) => {
-      historyDiv.innerHTML += `<strong>${ex.name}</strong><br>`;
-      ex.sets.forEach((s, i) => {
-        historyDiv.innerHTML += `Setti ${i + 1}: ${s.weight}kg × ${s.reps}<br>`;
-      });
-    });
-
-    workoutView.appendChild(historyDiv);
+    localStorage.setItem("currentWorkout", JSON.stringify(saved));
   }
 
-  // === TRENI INPUTIT ===
-  preset.exercises.forEach((ex, i) => {
+  saved.exercises.forEach((ex, i) => {
     const div = document.createElement("div");
     div.className = "exercise";
 
     div.innerHTML = `
-      <h3>${ex.name}</h3>
-      <div class="sets" id="sets-${i}"></div>
+    <h3>${ex.name}</h3>
+    <div id="sets-${i}"></div>
     `;
 
     workoutView.appendChild(div);
 
     const setsDiv = div.querySelector(`#sets-${i}`);
 
-    for (let s = 0; s < ex.sets; s++) {
+    ex.sets.forEach((set, s) => {
       const setDiv = document.createElement("div");
 
       setDiv.innerHTML = `
-        <br>Setti ${s + 1}:<br>
-        Paino <input type="number" value="0" class="weight"> kg<br>
-        Toistot <input type="number" value="0" class="reps">
+      <br>Setti ${s + 1}<br>
+
+      Paino
+      <input type="number"
+      class="weight"
+      value="${set.weight}"
+      data-ex="${i}"
+      data-set="${s}"> kg
+
+      <br>
+
+      Toistot
+      <input type="number"
+      class="reps"
+      value="${set.reps}"
+      data-ex="${i}"
+      data-set="${s}">
       `;
 
       setsDiv.appendChild(setDiv);
-    }
+    });
+  });
+
+  function updateStorage(e) {
+    const ex = e.target.dataset.ex;
+    const set = e.target.dataset.set;
+
+    let data = JSON.parse(localStorage.getItem("currentWorkout"));
+
+    const weight = document.querySelector(
+      `.weight[data-ex="${ex}"][data-set="${set}"]`,
+    ).value;
+
+    const reps = document.querySelector(
+      `.reps[data-ex="${ex}"][data-set="${set}"]`,
+    ).value;
+
+    data.exercises[ex].sets[set] = {
+      weight: parseInt(weight) || 0,
+      reps: parseInt(reps) || 0,
+    };
+
+    localStorage.setItem("currentWorkout", JSON.stringify(data));
+  }
+
+  document.querySelectorAll(".weight,.reps").forEach((input) => {
+    input.addEventListener("input", updateStorage);
   });
 
   const finishBtn = document.createElement("button");
+
   finishBtn.textContent = "Tallenna Treeni";
+
   workoutView.appendChild(finishBtn);
 
-  finishBtn.addEventListener("click", () => {
-    const workoutData = {
+  finishBtn.onclick = () => {
+    const data = JSON.parse(localStorage.getItem("currentWorkout"));
+
+    const workout = {
       date: new Date().toISOString().split("T")[0],
-      preset: preset.name,
-      exercises: preset.exercises.map((ex, i) => {
-        const setsDiv = document.getElementById(`sets-${i}`);
-
-        const sets = Array.from(setsDiv.querySelectorAll("div")).map((d) => {
-          const weight = parseInt(d.querySelector(".weight").value) || 0;
-          const reps = parseInt(d.querySelector(".reps").value) || 0;
-          return { weight, reps };
-        });
-
-        return { name: ex.name, sets };
-      }),
+      preset: data.name,
+      exercises: data.exercises,
     };
 
-    history.push(workoutData);
+    history.push(workout);
+
     localStorage.setItem("history", JSON.stringify(history));
 
-    alert("Treenisi tallennettu!");
+    localStorage.removeItem("currentWorkout");
+
+    alert("Treeni tallennettu!");
 
     workoutView.style.display = "none";
     presetsView.style.display = "block";
+
     renderPresets();
-  });
+  };
 }
 
-// === RENDER HISTORY ===
+// === HISTORY ===
 function renderHistory() {
   historyView.innerHTML = "";
 
-  if (history.length === 0)
-    return (historyView.innerHTML = "<p>Ei treenihistoriaa vielä.</p>");
+  if (history.length === 0) {
+    historyView.innerHTML = "Ei treenejä vielä";
+
+    return;
+  }
 
   history.forEach((h, i) => {
     const div = document.createElement("div");
+
     div.className = "history-item";
 
     div.innerHTML = `
-      <strong>${h.date} - ${h.preset}</strong>
-      <button data-index="${i}" class="delete-history-btn">🗑 Poista</button><br>
+    <strong>${h.date} - ${h.preset}</strong>
+    <button class="delete-history">🗑</button>
+    <br>
     `;
 
     h.exercises.forEach((ex) => {
-      div.innerHTML += `${ex.name}:<br>`;
+      div.innerHTML += `${ex.name}<br>`;
 
       ex.sets.forEach((s, j) => {
         div.innerHTML += `&nbsp;&nbsp;Setti ${j + 1}: ${s.weight}kg × ${s.reps}<br>`;
@@ -211,13 +282,15 @@ function renderHistory() {
 
     historyView.appendChild(div);
 
-    div.querySelector(".delete-history-btn").addEventListener("click", () => {
-      if (confirm("Haluatko varmasti poistaa tämän treenin?")) {
-        history.splice(i, 1);
-        localStorage.setItem("history", JSON.stringify(history));
-        renderHistory();
-      }
-    });
+    div.querySelector(".delete-history").onclick = () => {
+      if (!confirm("Poistetaanko treeni?")) return;
+
+      history.splice(i, 1);
+
+      localStorage.setItem("history", JSON.stringify(history));
+
+      renderHistory();
+    };
   });
 }
 
