@@ -101,7 +101,6 @@ input {
   border-radius: 6px;
   border: none;
   outline: none;
-  font-size: 16px;
 }
 input:focus {
   box-shadow: 0 0 0 2px #4caf50;
@@ -115,4 +114,16 @@ input:focus {
 
 .sets {
   margin-top: 8px;
+}
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+  width: 200px;
+}
+
+.exercise-form {
+  display: flex;
+  flex-direction: column;
 }

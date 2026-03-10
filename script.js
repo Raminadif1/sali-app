@@ -40,18 +40,35 @@ function renderPresets() {
   const addDiv = document.createElement("div");
   addDiv.className = "preset";
   addDiv.innerHTML = `
-  <h2>Uusi Treeniohjelma</h2>
-  Nimi:
+<h2>Uusi Treeniohjelma</h2>
+
+<div class="form-row">
+  <label>Nimi</label>
   <input id="new-preset-name" class="teksti">
-  <h3>Lisää liike</h3>
-  Liike
-  <input id="new-preset-exercise" class="teksti">
-  Setit
-  <input type="number" id="new-preset-sets" value="3" min="1">
-  <button id="add-exercise-btn">+ Lisää liike</button>
-  <ul id="exercise-list"></ul>
-  <button id="save-preset-btn">Tallenna</button>
-  `;
+</div>
+
+<h3>Lisää liike</h3>
+
+<div class="exercise-form">
+
+  <div class="form-row">
+    <label>Liike</label>
+    <input id="new-preset-exercise" class="teksti">
+  </div>
+
+  <div class="form-row">
+    <label>Setit</label>
+    <input type="number" id="new-preset-sets" value="3" min="1">
+  </div>
+
+</div>
+
+<button id="add-exercise-btn">+ Lisää liike</button>
+
+<ul id="exercise-list"></ul>
+
+<button id="save-preset-btn">Tallenna</button>
+`;
   presetsView.appendChild(addDiv);
 
   const list = document.getElementById("exercise-list");
@@ -146,21 +163,28 @@ function startWorkout(preset, resume = false) {
     ex.sets.forEach((set, s) => {
       const setDiv = document.createElement("div");
       setDiv.innerHTML = `
-      <br>Setti ${s + 1}<br>
-      Paino
-      <input type="number"
-        class="weight"
-        value="${set.weight}"
-        data-ex="${i}"
-        data-set="${s}"> kg
-      <br>
-      Toistot
-      <input type="number"
-        class="reps"
-        value="${set.reps}"
-        data-ex="${i}"
-        data-set="${s}">
-      `;
+<div class="set-row">
+  <span class="set-number">Setti ${s + 1}</span>
+
+  <label>
+    kg
+    <input type="number"
+      class="weight"
+      value="${set.weight}"
+      data-ex="${i}"
+      data-set="${s}">
+  </label>
+
+  <label>
+    reps
+    <input type="number"
+      class="reps"
+      value="${set.reps}"
+      data-ex="${i}"
+      data-set="${s}">
+  </label>
+</div>
+`;
       setsDiv.appendChild(setDiv);
     });
   });
